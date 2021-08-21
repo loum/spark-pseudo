@@ -9,7 +9,7 @@ SPARK_RELEASE := spark-$(SPARK_VERSION)-bin-without-hadoop
 
 # Tagging convention used: <hadoop-version>-<spark-version>-<image-release-number>
 MAKESTER__VERSION := $(HADOOP_VERSION)-$(SPARK_VERSION)
-MAKESTER__RELEASE_NUMBER := 1
+MAKESTER__RELEASE_NUMBER := 2
 
 include makester/makefiles/base.mk
 include makester/makefiles/docker.mk
@@ -19,6 +19,8 @@ UBUNTU_BASE_IMAGE := focal-20210609
 HADOOP_PSEUDO_BASE_IMAGE := $(HADOOP_VERSION)-1
 OPENJDK_8_HEADLESS := 8u292-b10-0ubuntu1~20.04
 PYTHON3_VERSION := 3.8.10-0ubuntu1~20.04
+
+export PATH := $(MAKESTER__PROJECT_PATH)/3env/bin:$(PATH)
 
 MAKESTER__BUILD_COMMAND = $(DOCKER) build --rm\
  --no-cache\
@@ -32,6 +34,8 @@ MAKESTER__BUILD_COMMAND = $(DOCKER) build --rm\
 
 MAKESTER__RUN_COMMAND := $(DOCKER) run --rm -d\
  --publish 8032:8032\
+ --publish 7077:7077\
+ --publish 8080:8080\
  --publish 8088:8088\
  --publish 8042:8042\
  --publish 18080:18080\
@@ -46,6 +50,8 @@ backoff:
 	@$(PYTHON) makester/scripts/backoff -d "YARN ResourceManager webapp UI" -p 8088 localhost
 	@$(PYTHON) makester/scripts/backoff -d "YARN NodeManager webapp UI" -p 8042 localhost
 	@$(PYTHON) makester/scripts/backoff -d "Spark HistoryServer web UI port" -p 18080 localhost
+	@$(PYTHON) makester/scripts/backoff -d "Spark master" -p 7077 localhost
+	@$(PYTHON) makester/scripts/backoff -d "Spark web UI port" -p 8080 localhost
 
 controlled-run: run backoff
 
@@ -66,6 +72,11 @@ pi:
  --executor-memory 1g\
  --executor-cores 1\
  /opt/spark/examples/jars/spark-examples_2.*-$(SPARK_VERSION).jar"
+
+pi-standalone:
+	spark-submit\
+ --master spark://localhost:7077\
+ https://raw.githubusercontent.com/apache/spark/master/examples/src/main/python/pi.py
 
 yarn-apps:
 	@$(DOCKER) exec -ti $(MAKESTER__CONTAINER_NAME)\
@@ -93,4 +104,5 @@ help: makester-help docker-help python-venv-help
   yarn-app-log         Dump log for YARN application ID defined by \"YARN_APPLICATION_ID\"\n\
   pyspark              Start the pyspark REPL\n\
   spark                Start the spark REPL\n\
-  pi                   Run the sample Spark Pi application\n"
+  pi                   Run the sample Spark Pi application on YARN cluster\n\
+  pi-standalone        Run the sample Spark Pi application on Spark standalone cluster\n"

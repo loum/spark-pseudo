@@ -51,6 +51,7 @@ export YARN_CONF_DIR=/opt/hadoop/etc/hadoop
 # - SPARK_WORKER_MEMORY, to set how much total memory workers have to give executors (e.g. 1000m, 2g)
 # - SPARK_WORKER_PORT / SPARK_WORKER_WEBUI_PORT, to use non-default ports for the worker
 # - SPARK_WORKER_DIR, to set the working directory of worker processes
+export SPARK_WORKER_DIR=/tmp/spark/work
 # - SPARK_WORKER_OPTS, to set config properties only for the worker (e.g. "-Dx=y")
 # - SPARK_DAEMON_MEMORY, to allocate to the master, worker and history server themselves (default: 1g).
 # - SPARK_HISTORY_OPTS, to set config properties only for the history server (e.g. "-Dx=y")

@@ -29,7 +29,7 @@ done
 # Create shared "spark.eventLog.dir"/"spark.history.fs.logDirectory" directories in HDFS.
 HADOOP_HOME=/opt/hadoop
 loop_counter=0
-max_loops=30
+max_loops=60
 sleep_period=2
 until [ $loop_counter -ge $max_loops ]
 do
@@ -51,6 +51,9 @@ then
 else
     echo "ERROR: Spark HistoryServer did not start"
 fi
+
+# Start the Spark pseudo-distributed cluster
+/opt/spark/sbin/start-all.sh
 
 # Block until we signal exit.
 trap 'exit 0' TERM

@@ -25,7 +25,6 @@ This repository will build you a Docker image that allows you to run Apache Spar
 ## Quick Links
 - [Apache Hadoop](https://hadoop.apache.org/)
 - [Apache Spark](https://spark.apache.org/)
-- [Apache Livy](https://livy.incubator.apache.org/)
 
 ## Quick Start
 Impatient and just want Spark quickly?
