@@ -16,9 +16,7 @@ include makester/makefiles/docker.mk
 include makester/makefiles/python-venv.mk
 
 UBUNTU_BASE_IMAGE := focal-20210827
-HADOOP_PSEUDO_BASE_IMAGE := $(HADOOP_VERSION)-2
 OPENJDK_8_HEADLESS := 8u292-b10-0ubuntu1~20.04
-PYTHON3_VERSION := 3.8.10-0ubuntu1~20.04
 
 export PATH := $(MAKESTER__PROJECT_DIR)/3env/bin:$(PATH)
 
@@ -27,20 +25,20 @@ MAKESTER__BUILD_COMMAND = $(DOCKER) build --rm\
  --build-arg SPARK_VERSION=$(SPARK_VERSION)\
  --build-arg SPARK_RELEASE=$(SPARK_RELEASE)\
  --build-arg UBUNTU_BASE_IMAGE=$(UBUNTU_BASE_IMAGE)\
- --build-arg HADOOP_PSEUDO_BASE_IMAGE=$(HADOOP_PSEUDO_BASE_IMAGE)\
+ --build-arg HADOOP_PSEUDO_BASE_IMAGE=$(HADOOP_VERSION)\
  --build-arg OPENJDK_8_HEADLESS=$(OPENJDK_8_HEADLESS)\
- --build-arg PYTHON3_VERSION=$(PYTHON3_VERSION)\
  -t $(MAKESTER__IMAGE_TAG_ALIAS) .
 
 MAKESTER__RUN_COMMAND := $(DOCKER) run --rm -d\
+ --hostname $(MAKESTER__CONTAINER_NAME)\
+ --name $(MAKESTER__CONTAINER_NAME)\
  --publish 8032:8032\
  --publish 7077:7077\
  --publish 8080:8080\
  --publish 8088:8088\
  --publish 8042:8042\
  --publish 18080:18080\
- --hostname $(MAKESTER__CONTAINER_NAME)\
- --name $(MAKESTER__CONTAINER_NAME)\
+ --env YARN_SITE__YARN_LOG_AGGREGATION_ENABLE=true\
  $(MAKESTER__SERVICE_NAME):$(HASH)
 
 init: clear-env makester-requirements

@@ -35,13 +35,6 @@ FROM loum/hadoop-pseudo:$HADOOP_PSEUDO_BASE_IMAGE
 
 USER root
 
-# Install python to support pyspark.
-ARG PYTHON3_VERSION
-RUN apt-get update && apt-get install -y --no-install-recommends\
- python3.8=$PYTHON3_VERSION\
- python-is-python3 &&\
- rm -rf /var/lib/apt/lists/*
-
 WORKDIR /opt
 
 ARG SPARK_RELEASE
@@ -54,10 +47,6 @@ RUN tar zxf $SPARK_RELEASE.tgz\
 ARG SPARK_HOME=/opt/spark
 COPY files/spark-env.sh $SPARK_HOME/conf/spark-env.sh
 COPY files/spark-defaults.conf $SPARK_HOME/conf/spark-defaults.conf
-
-# Hadoop YARN
-RUN mv hadoop/etc/hadoop/yarn-site.xml hadoop/etc/hadoop/yarn-site.xml.orig
-COPY files/yarn-site.xml hadoop/etc/hadoop/yarn-site.xml
 
 ARG SPARK_VERSION
 
