@@ -3,12 +3,13 @@
 nohup sh -c /hadoop-bootstrap.sh &
 
 # Pause until Hadoop bootstrap completes.
+echo "### Starting Hadoop bootstrap ..."
 counter=0
 sleep_time=5
 break_out=19
 file_to_check="/tmp/hadoop-hdfs-nodemanager.pid"
 while : ; do
-    if [ -f "$file_to_check" -o $counter -gt $break_out ]
+    if [ -f "$file_to_check" ] || [ $counter -gt $break_out ]
     then
         if [ -f "$file_to_check" ]
         then
@@ -18,41 +19,46 @@ while : ; do
         fi
         break
     else
-        echo "$0 pausing until $file_to_check exists."
+        echo "### $0 pausing until $file_to_check exists."
         sleep $sleep_time
-        counter=$((counter+$sleep_time))
+        counter=$((counter+sleep_time))
     fi
 done
 
-# Start Spark HistoryServer.
-#
-# Create shared "spark.eventLog.dir"/"spark.history.fs.logDirectory" directories in HDFS.
+echo "### Prime Hadoop filesystem for Spark ..."
 HADOOP_HOME=/opt/hadoop
 loop_counter=0
 max_loops=60
-sleep_period=2
+sleep_period=5
 until [ $loop_counter -ge $max_loops ]
 do
-    $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp 2>/dev/null && break
+    # Check if "/tmp" already exists?
+    $HADOOP_HOME/bin/hdfs dfs -test -e /tmp && break
+    
+    # Now, try and create "/tmp".
+    $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp && break
+
     loop_counter=$((loop_counter+1))
     sleep $sleep_period
 done
 
-# Copy over the Spark JARs to HDFS.
+echo "### Copy over the Spark JARs to HDFS ..."
 $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp/spark
 $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp/spark/yarn
 $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp/spark/yarn/archive
 $HADOOP_HOME/bin/hdfs dfs -copyFromLocal /opt/spark/jars/* /tmp/spark/yarn/archive/
 
+echo "### Starting Spark HistoryServer ..."
 if [ $loop_counter -lt $max_loops ]
 then
-    $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp/spark-events
+    # Create shared "spark.eventLog.dir"/"spark.history.fs.logDirectory" directories in HDFS.
+    $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp/spark/spark-logs
     /opt/spark/sbin/start-history-server.sh
 else
-    echo "ERROR: Spark HistoryServer did not start"
+    echo "### ERROR: Spark HistoryServer did not start"
 fi
 
-# Start the Spark pseudo-distributed cluster
+echo "### Starting the Spark cluster ..."
 /opt/spark/sbin/start-all.sh
 
 # Block until we signal exit.
