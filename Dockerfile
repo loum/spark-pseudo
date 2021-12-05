@@ -5,13 +5,13 @@ ARG HADOOP_PSEUDO_BASE_IMAGE
 
 FROM ubuntu:$UBUNTU_BASE_IMAGE AS downloader
 
-ARG OPENJDK_8_HEADLESS
+ARG OPENJDK_11_HEADLESS
 RUN apt-get update && apt-get install -y --no-install-recommends\
  wget\
  unzip\
  ca-certificates\
  git\
- openjdk-8-jdk-headless=$OPENJDK_8_HEADLESS
+ openjdk-11-jdk-headless=$OPENJDK_11_HEADLESS
 
 WORKDIR /tmp
 
@@ -20,7 +20,7 @@ RUN git clone --depth 1 --branch v$SPARK_VERSION https://github.com/apache/spark
 
 # Build a runnable distribution.
 WORKDIR spark
-ENV MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=2g"
+ENV MAVEN_OPTS="-Xss64m -Xmx2g -XX:ReservedCodeCacheSize=1g"
 ARG SPARK_RELEASE
 RUN dev/make-distribution.sh\
  --name without-hadoop\

@@ -20,7 +20,7 @@
 ## Overview
 Quick and easy way to get Spark (YARN on Pseudo Distributed Hadoop) with Docker.
 
-This repository will build you a Docker image that allows you to run Apache Spark as a compute engine.  [Spark itself uses YARN as the resource manager](https://spark.apache.org/docs/3.1.2/running-on-yarn.html) which we leverage from the underlying Hadoop install.  See documentation on the [Pseudo Hadoop base Docker image](https://github.com/loum/hadoop-pseudo) for details on how Hadoop/YARN has been configured.
+This repository will build you a Docker image that allows you to run Apache Spark as a compute engine.  [Spark itself uses YARN as the resource manager](https://spark.apache.org/docs/3.2.0/running-on-yarn.html) which we leverage from the underlying Hadoop install.  See documentation on the [Pseudo Hadoop base Docker image](https://github.com/loum/hadoop-pseudo) for details on how Hadoop/YARN has been configured.
 
 ## Quick Links
 - [Apache Hadoop](https://hadoop.apache.org/)
@@ -63,7 +63,7 @@ make help
 ### Image Build
 The image build compiles Spark from scratch to ensure we get the correct version without the YARN libraries.  More info can be found at the [Spark build page](http://spark.apache.org/docs/2.4.8/building-spark.html).
 
-To build the Docker image against Apache Spark version `SPARK_VERSION` (defaults to `3.1.2`):
+To build the Docker image against Apache Spark version `SPARK_VERSION` (defaults to `3.2.0`):
 ```
 make build-image
 ```
@@ -142,7 +142,7 @@ Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /__ / .__/\_,_/_/ /_/\_\   version 3.1.2
+   /__ / .__/\_,_/_/ /_/\_\   version 3.2.0
       /_/
 
 Using Python version 3.8.10 (default, Jun  2 2021 10:49:15)
@@ -167,10 +167,10 @@ Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /___/ .__/\_,_/_/ /_/\_\   version 3.1.2
+   /___/ .__/\_,_/_/ /_/\_\   version 3.2.0
       /_/
          
-Using Scala version 2.12.10 (OpenJDK 64-Bit Server VM, Java 1.8.0_292)
+Using Scala version 2.12.15 (OpenJDK 64-Bit Server VM, Java 11.0.11)
 Type in expressions to have them evaluated.
 Type :help for more information.
 
