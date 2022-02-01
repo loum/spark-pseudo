@@ -21,7 +21,7 @@ while : ; do
     else
         echo "### $0 pausing until $file_to_check exists."
         sleep $sleep_time
-        counter=$((counter+sleep_time))
+        counter=$((counter+1))
     fi
 done
 
@@ -47,6 +47,11 @@ $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp/spark
 $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp/spark/yarn
 $HADOOP_HOME/bin/hdfs dfs -mkdir /tmp/spark/yarn/archive
 $HADOOP_HOME/bin/hdfs dfs -copyFromLocal /opt/spark/jars/* /tmp/spark/yarn/archive/
+
+# Generate the configs from environment settings.
+python /config-setter.py -t "/opt/spark/conf/spark-env.sh.j2" -T "SPARK_ENV__"
+echo "### Making /opt/spark/conf/spark-env.sh executable ..."
+chmod u+x /opt/spark/conf/spark-env.sh
 
 echo "### Starting Spark HistoryServer ..."
 if [ $loop_counter -lt $max_loops ]

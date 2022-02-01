@@ -34,7 +34,6 @@ ARG HADOOP_PSEUDO_BASE_IMAGE
 FROM loum/hadoop-pseudo:$HADOOP_PSEUDO_BASE_IMAGE
 
 USER root
-
 WORKDIR /opt
 
 ARG SPARK_RELEASE
@@ -45,7 +44,7 @@ RUN tar zxf $SPARK_RELEASE.tgz\
 
 # Spark config.
 ARG SPARK_HOME=/opt/spark
-COPY files/spark-env.sh $SPARK_HOME/conf/spark-env.sh
+COPY files/spark-env.sh.j2 $SPARK_HOME/conf/spark-env.sh.j2
 COPY files/spark-defaults.conf $SPARK_HOME/conf/spark-defaults.conf
 
 ARG SPARK_VERSION
@@ -64,8 +63,7 @@ EXPOSE 8042
 # Spark HistoryServer web UI port.
 EXPOSE 18080
 
-# Livy server port.
-#EXPOSE 8998
+RUN chown -R hdfs:hdfs .
 
 # Start user run context.
 USER hdfs

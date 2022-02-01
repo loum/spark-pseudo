@@ -9,13 +9,13 @@ SPARK_RELEASE := spark-$(SPARK_VERSION)-bin-without-hadoop
 
 # Tagging convention used: <hadoop-version>-<spark-version>-<image-release-number>
 MAKESTER__VERSION := $(HADOOP_VERSION)-$(SPARK_VERSION)
-MAKESTER__RELEASE_NUMBER := 1
+MAKESTER__RELEASE_NUMBER := 2
 
 include makester/makefiles/base.mk
 include makester/makefiles/docker.mk
 include makester/makefiles/python-venv.mk
 
-UBUNTU_BASE_IMAGE := focal-20220105
+UBUNTU_BASE_IMAGE := focal-20220113
 OPENJDK_11_HEADLESS := 11.0.13+8-0ubuntu1~20.04
 
 export PATH := $(MAKESTER__PROJECT_DIR)/3env/bin:$(PATH)

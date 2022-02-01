@@ -4,12 +4,14 @@
 - [Quick Start](#Quick-Start)
 - [Prerequisites](#Prerequisites)
 - [Getting Started](#Getting-Started)
-- [Getting Help](#Getting-Help) 
+- [Getting Help](#Getting-Help)
 - [Docker Image Management](#Docker-Image-Management)
   - [Image Build](#Image-Build)
   - [Image Searches](#Image-Searches)
-  - [Image Tagging](#Image-Tagging) 
+  - [Image Tagging](#Image-Tagging)
 - [Interact with Apache Spark](#Interact-with-Apache-Spark)
+-   [Configuration](#Configuration)
+-   [Container Control](#Container-Control)
   - [Start a shell on the Container](#Start-a-shell-on-the-Container)
   - [Submitting Applications to Spark](#Submitting-Applications-to-Spark)
     - [Sample SparkPi Application](#Sample-SparkPi-Application)
@@ -71,8 +73,24 @@ You can target a specific Apache Spark release by setting `SPARK_VERSION`.  For 
 ```
 SPARK_VERSION=3.0.3 make build image
 ```
-> **_NOTE:_** the image builds against Python 3 so you may be limited around which versions of `pyspark` you can use.  For example, `pyspark` against `SPARK_VERSION` `2.4.8` breaks Livy.
-
+#### Configuration
+`spark-env.sh` configuration settings can be overridden during container startup by targeting the setting name and prepending the configuration file context as environment variables to the container runtime.  For example, to control the Spark executor settings you can add the following `SPARK_ENV__*` environment variables to Docker `run`:
+```
+docker run --rm -d --name jupyter-spark-pseudo\
+ --hostname jupyter-spark-pseudo\
+ --env JUPYTER_PORT=8889\
+ --volume $(PWD)/jupyter-spark-pseudo/notebooks:/home/hdfs/notebooks\
+ --env YARN_SITE__YARN_NODEMANAGER_RESOURCE_DETECT_HARDWARE_CAPABILITIES=true\
+ --env SPARK_ENV__SPARK_EXECUTOR_CORES=2\
+ --env SPARK_ENV__SPARK_EXECUTOR_INSTANCES=7\
+ --env SPARK_ENV__SPARK_EXECUTOR_MEMORY=1280m\
+ --publish 8032:8032\
+ --publish 8088:8088\
+ --publish 8042:8042\
+ --publish 18080:18080\
+ --publish 8889:8889\
+ loum/jupyter-spark-pseudo:latest
+```
 ### Image Searches
 Search for existing Docker image tags with command:
 ```
@@ -88,6 +106,19 @@ To tag the image as `latest`:
 make tag-latest
 ```
 ## Interact with Apache Spark
+### Configuration
+Every Hadoop configuration settings can be overridden during container startup by targeting the setting name and prepending the configuration file context as per the following:
+
+-   [Hadoop core-default.xml](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml)  | Override with  `CORE_SITE__<setting>`
+-   [Hadoop hdfs-default.xml](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml)  | Override token  `HDFS_SITE__<setting>`
+-   [Hadoop mapred-default.xml](https://hadoop.apache.org/docs/stable/hadoop-mapreduce-client/hadoop-mapreduce-client-core/mapred-default.xml)  | Override with  `MAPRED_SITE__<setting>`
+-   [Hadoop yarn-default.xml](https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-common/yarn-default.xml)  | Override with  `YARN_SITE__<setting>`
+
+Similarly, for Spark enviornment settings:
+
+-  [spark-env.sh](https://github.com/apache/spark/blob/master/conf/spark-env.sh.template) | Override with `SPARK_ENV__<setting>`
+
+### Container Control
 To start the container and wait for all Hadoop services to initiate:
 ```
 make controlled-run
@@ -133,7 +164,7 @@ End of LogType:stdout
 make pyspark
 ```
 ```
-Python 3.8.10 (default, Jun  2 2021, 10:49:15) 
+Python 3.8.10 (default, Jun  2 2021, 10:49:15)
 [GCC 9.4.0] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 Setting default log level to "WARN".
@@ -169,12 +200,12 @@ Welcome to
     _\ \/ _ \/ _ `/ __/  '_/
    /___/ .__/\_,_/_/ /_/\_\   version 3.2.0
       /_/
-         
+
 Using Scala version 2.12.15 (OpenJDK 64-Bit Server VM, Java 11.0.11)
 Type in expressions to have them evaluated.
 Type :help for more information.
 
-scala> 
+scala>
 ```
 ## Web Interfaces
 The following web interfaces are available to view configurations and logs and to track YARN/Spark job submissions:
