@@ -129,7 +129,7 @@ make stop
 ```
 ### Start a shell on the Container
 ```
-make login
+make bash
 ```
 ### Submitting Applications to Spark
 The [Spark computing system](<https://spark.apache.org/docs/latest/index.html>)_ is available and can be invoked as per normal.  More information on submitting applications to Spark can be found [here](https://spark.apache.org/docs/2.4.8/submitting-applications.html).
