@@ -1,17 +1,21 @@
+# syntax=docker/dockerfile:1.4
+
 ARG SPARK_VERSION
 ARG SPARK_RELEASE
-ARG UBUNTU_BASE_IMAGE
 ARG HADOOP_PSEUDO_BASE_IMAGE
 
-FROM ubuntu:$UBUNTU_BASE_IMAGE AS downloader
+FROM $HADOOP_PSEUDO_BASE_IMAGE AS builder
 
-ARG OPENJDK_11_HEADLESS
+USER root
+
 RUN apt-get update && apt-get install -y --no-install-recommends\
  wget\
  unzip\
  ca-certificates\
- git\
- openjdk-11-jdk-headless=$OPENJDK_11_HEADLESS
+ git &&\
+ apt-get autoremove -yqq --purge &&\
+ rm -rf /var/lib/apt/lists/* &&\
+ rm -rf /var/log/*
 
 WORKDIR /tmp
 
@@ -28,16 +32,17 @@ RUN dev/make-distribution.sh\
  -Pyarn\
  -Phadoop-provided
 
-### downloader stage end.
+### builder stage end.
 
 ARG HADOOP_PSEUDO_BASE_IMAGE
-FROM loum/hadoop-pseudo:$HADOOP_PSEUDO_BASE_IMAGE
+
+FROM $HADOOP_PSEUDO_BASE_IMAGE
 
 USER root
 WORKDIR /opt
 
 ARG SPARK_RELEASE
-COPY --from=downloader /tmp/spark/$SPARK_RELEASE.tgz $SPARK_RELEASE.tgz
+COPY --from=builder /tmp/spark/$SPARK_RELEASE.tgz $SPARK_RELEASE.tgz
 RUN tar zxf $SPARK_RELEASE.tgz\
  && ln -s $SPARK_RELEASE spark\
  && rm $SPARK_RELEASE.tgz

@@ -3,7 +3,7 @@
 MAKESTER__REPO_NAME := loum
 MAKESTER__CONTAINER_NAME := spark-pseudo
 
-HADOOP_VERSION := 3.3.3
+HADOOP_VERSION := 3.3.4
 SPARK_VERSION ?= 3.3.0
 SPARK_RELEASE := spark-$(SPARK_VERSION)-bin-without-hadoop
 
@@ -15,19 +15,13 @@ include makester/makefiles/base.mk
 include makester/makefiles/docker.mk
 include makester/makefiles/python-venv.mk
 
-UBUNTU_BASE_IMAGE := jammy-20220531
-OPENJDK_11_HEADLESS := 11.0.15+10-0ubuntu0.22.04.1
-
 export PATH := $(MAKESTER__PROJECT_DIR)/3env/bin:$(PATH)
 
 MAKESTER__BUILD_COMMAND = $(DOCKER) build --rm\
  --no-cache\
- --format docker\
  --build-arg SPARK_VERSION=$(SPARK_VERSION)\
  --build-arg SPARK_RELEASE=$(SPARK_RELEASE)\
- --build-arg UBUNTU_BASE_IMAGE=$(UBUNTU_BASE_IMAGE)\
- --build-arg HADOOP_PSEUDO_BASE_IMAGE=$(HADOOP_VERSION)\
- --build-arg OPENJDK_11_HEADLESS=$(OPENJDK_11_HEADLESS)\
+ --build-arg HADOOP_PSEUDO_BASE_IMAGE=loum/hadoop-pseudo:$(HADOOP_VERSION)\
  -t $(MAKESTER__IMAGE_TAG_ALIAS) .
 
 MAKESTER__RUN_COMMAND := $(DOCKER) run --rm -d\
