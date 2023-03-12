@@ -1,22 +1,18 @@
-# Apache Spark (YARN on Pseudo Distributed Hadoop) with Docker
-- [Overview](#Overview)
-- [Quick Links](#Quick-Links)
-- [Quick Start](#Quick-Start)
-- [Prerequisites](#Prerequisites)
-- [Getting Started](#Getting-Started)
-- [Getting Help](#Getting-Help)
-- [Docker Image Management](#Docker-Image-Management)
-  - [Image Build](#Image-Build)
-  - [Image Searches](#Image-Searches)
-  - [Image Tagging](#Image-Tagging)
-- [Interact with Apache Spark](#Interact-with-Apache-Spark)
--   [Configuration](#Configuration)
--   [Container Control](#Container-Control)
-  - [Start a shell on the Container](#Start-a-shell-on-the-Container)
-  - [Submitting Applications to Spark](#Submitting-Applications-to-Spark)
-    - [Sample SparkPi Application](#Sample-SparkPi-Application)
-  - [`pyspark`](#`pyspark`)
-  - [`spark`](#`spark`)
+# Apache Spark (YARN on Pseudo Distributed Hadoop) Container Image
+
+- [Overview](#overview)
+- [Quick Links](#quick-links)
+- [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+- [Getting Help](#getting-help)
+- [Container Image Management](#container-image-management)
+- [Interact with Apache Spark](#interact-with-apache-spark)
+  - [Configuration](#configuration)
+  - [Container runtime control](#container-runtime-control)
+  - [Submitting Applications to Spark](#submitting-applications-to-spark)
+    - [Sample SparkPi Application](#sample-sparkpi-application)
+- [Useful Commands](#useful-commands)
 - [Web Interfaces](#Web-Interfaces)
 
 ## Overview
@@ -24,18 +20,28 @@ Quick and easy way to get Spark (YARN on Pseudo Distributed Hadoop) with Docker.
 
 This repository will build you a Docker image that allows you to run Apache Spark as a compute engine.  [Spark itself uses YARN as the resource manager](https://spark.apache.org/docs/3.2.0/running-on-yarn.html) which we leverage from the underlying Hadoop install.  See documentation on the [Pseudo Hadoop base Docker image](https://github.com/loum/hadoop-pseudo) for details on how Hadoop/YARN has been configured.
 
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
+
 ## Quick Links
 - [Apache Hadoop](https://hadoop.apache.org/)
 - [Apache Spark](https://spark.apache.org/)
 
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
+
 ## Quick Start
-Impatient and just want Spark quickly?
+Impatient, and just want Spark quickly?
 ```
 docker run --rm -d --name spark-pseudo loum/spark-pseudo:latest
 ```
-## Prerequisties
+
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
+
+## Prerequisites
 - [Docker](https://docs.docker.com/install/)
 - [GNU make](https://www.gnu.org/software/make/manual/make.html)
+- Python 3 Interpreter. [We recommend installing pyenv](https://github.com/pyenv/pyenv).
+
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
 
 ## Getting Started
 Get the code and change into the top level `git` project directory:
@@ -56,25 +62,50 @@ Setup the environment:
 ```
 make init
 ```
+
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
+
 ## Getting Help
 There should be a `make` target to get most things done.  Check the help for more information:
 ```
 make help
 ```
-## Docker Image Management
-### Image Build
-The image build compiles Spark from scratch to ensure we get the correct version without the YARN libraries.  More info can be found at the [Spark build page](http://spark.apache.org/docs/2.4.8/building-spark.html).
 
-To build the Docker image against Apache Spark version `SPARK_VERSION` (defaults to `3.2.0`):
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
+
+## Container Image Management
+
+> **_NOTE:_**  See [Makester's `docker` subsystem](https://loum.github.io/makester/makefiles/docker/) for more detailed container image operations.
+
+Build the container image locally:
 ```
-make build-image
+make image-build
 ```
-You can target a specific Apache Spark release by setting `SPARK_VERSION`.  For example:
+
+Search for built container image:
 ```
-SPARK_VERSION=3.0.3 make build image
+make image-search
 ```
-#### Configuration
-`spark-env.sh` configuration settings can be overridden during container startup by targeting the setting name and prepending the configuration file context as environment variables to the container runtime.  For example, to control the Spark executor settings you can add the following `SPARK_ENV__*` environment variables to Docker `run`:
+
+Delete the container image:
+```
+make image-rm
+```
+
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
+
+## Interact with Apache Spark
+### Configuration
+Every Hadoop configuration settings can be overridden during container startup by targeting the setting name and prepending the configuration file context as per the following:
+
+-   [Hadoop core-default.xml](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml)  | Override with  `CORE_SITE__<setting>`
+-   [Hadoop hdfs-default.xml](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml)  | Override token  `HDFS_SITE__<setting>`
+-   [Hadoop mapred-default.xml](https://hadoop.apache.org/docs/stable/hadoop-mapreduce-client/hadoop-mapreduce-client-core/mapred-default.xml)  | Override with  `MAPRED_SITE__<setting>`
+-   [Hadoop yarn-default.xml](https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-common/yarn-default.xml)  | Override with  `YARN_SITE__<setting>`
+
+Similarly, for Spark environment settings:
+
+-  [spark-env.sh](https://github.com/apache/spark/blob/master/conf/spark-env.sh.template) | Override with `SPARK_ENV__<setting>`. For example, to control the Spark executor settings you can add the following `SPARK_ENV__*` environment variables to Docker `run`:
 ```
 docker run --rm -d --name jupyter-spark-pseudo\
  --hostname jupyter-spark-pseudo\
@@ -91,50 +122,22 @@ docker run --rm -d --name jupyter-spark-pseudo\
  --publish 8889:8889\
  loum/jupyter-spark-pseudo:latest
 ```
-### Image Searches
-Search for existing Docker image tags with command:
-```
-make search-image
-```
-### Image Tagging
-By default, `makester` will tag the new Docker image with the current branch hash.  This provides a degree of uniqueness but is not very intuitive.  That's where the `tag-version` `Makefile` target can help.  To apply tag as per project tagging convention `<hadoop-version>-<spark-version>-<image-release-number>`:
-```
-make tag-version
-```
-To tag the image as `latest`:
-```
-make tag-latest
-```
-## Interact with Apache Spark
-### Configuration
-Every Hadoop configuration settings can be overridden during container startup by targeting the setting name and prepending the configuration file context as per the following:
 
--   [Hadoop core-default.xml](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml)  | Override with  `CORE_SITE__<setting>`
--   [Hadoop hdfs-default.xml](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml)  | Override token  `HDFS_SITE__<setting>`
--   [Hadoop mapred-default.xml](https://hadoop.apache.org/docs/stable/hadoop-mapreduce-client/hadoop-mapreduce-client-core/mapred-default.xml)  | Override with  `MAPRED_SITE__<setting>`
--   [Hadoop yarn-default.xml](https://hadoop.apache.org/docs/stable/hadoop-yarn/hadoop-yarn-common/yarn-default.xml)  | Override with  `YARN_SITE__<setting>`
-
-Similarly, for Spark enviornment settings:
-
--  [spark-env.sh](https://github.com/apache/spark/blob/master/conf/spark-env.sh.template) | Override with `SPARK_ENV__<setting>`
-
-### Container Control
-To start the container and wait for all Hadoop services to initiate:
+### Container runtime control
+`controlled-run` is a convenience target to start the container with basic configuration, and wait for all Hadoop services to initiate:
 ```
 make controlled-run
 ```
+
 To stop the container:
 ```
-make stop
+make container-stop
 ```
-### Start a shell on the Container
-```
-make bash
-```
-### Submitting Applications to Spark
+
+### Submitting applications to Spark
 The [Spark computing system](<https://spark.apache.org/docs/latest/index.html>)_ is available and can be invoked as per normal.  More information on submitting applications to Spark can be found [here](https://spark.apache.org/docs/2.4.8/submitting-applications.html).
 
-#### Sample SparkPi Application
+#### Sample SparkPi application
 The [sample SparkPi application](https://spark.apache.org/docs/2.4.8/running-on-yarn.html#launching-spark-on-yarn) can be launched with:
 ```
 make pi
@@ -147,7 +150,7 @@ Then plug in an `Application-Id` into:
 ```
 make yarn-app-log YARN_APPLICATION_ID=<Application-Id>
 ```
-To see something similar to the following::
+To see something similar to the following:
 ```
 ====================================================================
 LogType:stdout
@@ -159,10 +162,15 @@ Pi is roughly 3.1398156990784956
 End of LogType:stdout
 ***********************************************************************
 ```
-### `pyspark`
+
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
+
+## Useful Commands
+To start the `pyspark` REPL:
 ```
 make pyspark
 ```
+
 ```
 Python 3.8.10 (default, Jun  2 2021, 10:49:15)
 [GCC 9.4.0] on linux
@@ -182,12 +190,13 @@ Spark context available as 'sc' (master = yarn, app id = application_16259986414
 SparkSession available as 'spark'.
 >>>
 ```
-> **_Note:_** see Apache Spark limitations in the [image build process](#Image-Build).
+> **_NOTE:_** see Apache Spark limitations in the [image build process](#Image-Build).
 
-### `spark`
+To start the `spark-shell` REPL:
 ```
 make spark
 ```
+
 ```
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -207,6 +216,9 @@ Type :help for more information.
 
 scala>
 ```
+
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
+
 ## Web Interfaces
 The following web interfaces are available to view configurations and logs and to track YARN/Spark job submissions:
 - YARN NameNode web UI: http://localhost:8042
@@ -214,4 +226,4 @@ The following web interfaces are available to view configurations and logs and t
 - Spark History Server web UI: http://localhost:18080
 
 ---
-[top](Apache-Spark-(YARN-on-Pseudo-Distributed-Hadoop)-with-Docker)
+[top](#apache-spark-yarn-on-pseudo-distributed-hadoop-container-image)
